@@ -25,6 +25,8 @@ struct SearchView: View {
             
             if let executionTime = viewModel.executionTime {
                 Text("execution time: \(executionTime)")
+                    .background(viewModel.getColor())
+
             }
             
         }

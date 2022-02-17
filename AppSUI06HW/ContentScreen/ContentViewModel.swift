@@ -24,6 +24,13 @@ final class ContentViewModel: ObservableObject {
                 executionTime = await searchQueue.run()
                 guard let executionTime = executionTime else { return }
                 history.append((searchText, executionTime))
+                let time = Double(executionTime)
+                if time > maxTime {
+                    maxTime = time
+                }
+                if time < minTime || minTime == 0.0 {
+                    minTime = time
+                }
             }
         }
     }
@@ -42,6 +49,8 @@ final class ContentViewModel: ObservableObject {
     
     private var searchQueue = JobQueue()
 
+    private var maxTime = 0.0, minTime = 0.0
+    
     init() {
         searchQueue = JobScheduler.shared.queue(id: "searchQueue")
         searchQueue.jobs.append { [weak self] in
@@ -86,6 +95,21 @@ final class ContentViewModel: ObservableObject {
         guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.zakk.AppSUI06HW")?.appendingPathComponent("userText") else { return }
         guard let data = try? Data(contentsOf: url) else { return }
         userText = String(data: data, encoding: .utf8)!
+    }
+    
+    func getColor() -> Color {
+        
+        let diff = maxTime - minTime
+        guard diff != 0.0 else { return Color.green }
+        
+        guard let time = executionTime else { return Color.green }
+        let perc = 100 - (Double(time) - minTime) / diff * 100
+        
+        var r = 0.0, g = 0.0, b = 0.0;
+        r  = (perc > 50 ? 1-2*(perc-50)/100.0 : 1.0);
+        g = (perc > 50 ? 1.0 : 2*perc/100.0);
+        
+        return Color(red: r, green: g, blue: b)
     }
 }
 
